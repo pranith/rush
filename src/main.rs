@@ -1,8 +1,15 @@
 use std::io;
 use std::io::Write;
+use std::process::Command;
 
 fn process(buffer: &String) {
-    println!("Size of command {}", buffer.len());
+
+    let mut tokens: Vec<&str> = buffer.split_whitespace().collect();
+    let mut subproc = Command::new(tokens[0]);
+    let mut subproc_with_args = subproc.args(&tokens.split_off(1));
+    let mut child = subproc_with_args.spawn().expect("Failed to execute");
+    let _ = child.wait();
+    let _ = io::stdout().flush();
 }
 
 fn main() {
@@ -11,9 +18,8 @@ fn main() {
         print!("$ ");
         let _ = io::stdout().flush();
         match io::stdin().read_line(&mut buffer) {
-            Ok(n) => {
+            Ok(_) => {
                 process(&buffer);
-                println!("Read {} bytes: {}", n, buffer);
             }
             Err(err) => {
                 println!("Read error: {}", err);
