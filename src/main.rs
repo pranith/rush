@@ -20,10 +20,16 @@ fn process(buffer: &String) {
 
     let mut subproc = Command::new(tokens[0]);
     let mut subproc_with_args = subproc.args(&args);
-    let mut child = subproc_with_args.spawn().expect("Failed to execute");
-
-    if no_wait == false {
-        let _ = child.wait();
+    match subproc_with_args.spawn() {
+      Ok(mut child) => {
+        if no_wait == false {
+          let _ = child.wait();
+        }
+      }
+      Err(err) => {
+        println!("Failed to execute {}: {}", tokens[0], err);
+        return;
+      }
     }
 
     let _ = io::stdout().flush();
