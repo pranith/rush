@@ -1,6 +1,18 @@
+use std::env;
+use std::path::Path;
 use std::io;
 use std::io::Write;
 use std::process::Command;
+
+fn change_dir(args: &Vec<&str>) {
+  let path_buf = env::home_dir().unwrap();
+  let path = match args.len() {
+    0 => path_buf.as_path(),
+    _ => Path::new(&args[0]),
+  };
+  env::set_current_dir(&path).is_ok();
+  return;
+}
 
 fn process(buffer: &String) {
 
@@ -18,8 +30,14 @@ fn process(buffer: &String) {
         args.truncate(buffer_len - 2);
     }
 
+    match tokens[0] {
+      "cd" => { return change_dir(&args); }
+      &_   => {}
+    }
+
     let mut subproc = Command::new(tokens[0]);
     let mut subproc_with_args = subproc.args(&args);
+
     match subproc_with_args.spawn() {
       Ok(mut child) => {
         if no_wait == false {
